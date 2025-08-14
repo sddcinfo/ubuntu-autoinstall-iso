@@ -227,7 +227,18 @@ echo -n "Configuring EFI boot order... "
 if [[ ! -d /sys/firmware/efi ]]; then
   echo "skipped (not an EFI system)"
 else
-  # Get current boot entries
+  # Force firmware to rescan for new boot devices
+  echo -n "refreshing EFI boot entries... "
+  partprobe "${TARGET_DEVICE}" >/dev/null 2>&1 || true
+  sleep 2
+  
+  # Force udev to process the new partition table
+  udevadm settle >/dev/null 2>&1 || true
+  udevadm trigger --subsystem-match=block >/dev/null 2>&1 || true
+  udevadm settle >/dev/null 2>&1 || true
+  sleep 1
+  
+  # Get current boot entries after refresh
   BOOT_ENTRIES=$(efibootmgr 2>/dev/null)
   
   if [[ $? -ne 0 ]]; then
@@ -241,11 +252,21 @@ else
     
     # Common patterns for eMMC/MMC devices in EFI
     if [[ "${TARGET_DEVICE}" =~ mmcblk ]]; then
-      # Look for MMC or eMMC entries
+      # Look for MMC or eMMC entries (case insensitive)
       BOOT_ENTRY=$(echo "${BOOT_ENTRIES}" | grep -i -E "(mmc|emmc)" | head -1 | grep -o "Boot[0-9A-F]\{4\}")
+      
+      # If not found, try searching by device path
+      if [[ -z "${BOOT_ENTRY}" ]]; then
+        BOOT_ENTRY=$(echo "${BOOT_ENTRIES}" | grep -i "${DEVICE_NAME}" | head -1 | grep -o "Boot[0-9A-F]\{4\}")
+      fi
     else
-      # For other devices, try to match by device name or look for removable media
-      BOOT_ENTRY=$(echo "${BOOT_ENTRIES}" | grep -i "${DEVICE_NAME}\|removable\|usb" | head -1 | grep -o "Boot[0-9A-F]\{4\}")
+      # For other devices, try to match by device name first
+      BOOT_ENTRY=$(echo "${BOOT_ENTRIES}" | grep -i "${DEVICE_NAME}" | head -1 | grep -o "Boot[0-9A-F]\{4\}")
+      
+      # Then try removable media patterns
+      if [[ -z "${BOOT_ENTRY}" ]]; then
+        BOOT_ENTRY=$(echo "${BOOT_ENTRIES}" | grep -i -E "(removable|usb)" | head -1 | grep -o "Boot[0-9A-F]\{4\}")
+      fi
     fi
     
     if [[ -n "${BOOT_ENTRY}" ]]; then
@@ -255,22 +276,28 @@ else
       # Set this as the next boot device
       if efibootmgr -n "${BOOT_NUM}" >/dev/null 2>&1; then
         echo "done (set ${BOOT_ENTRY} for next boot)"
+        
+        # Optionally display the boot entry details
+        echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
       else
-        echo "warning (failed to set boot order)"
+        echo "warning (failed to set boot order for ${BOOT_ENTRY})"
       fi
     else
-      # If we can't find a specific entry, try to find any removable/external device
+      # If we still can't find a specific entry, try any removable/external device
       BOOT_ENTRY=$(echo "${BOOT_ENTRIES}" | grep -i -E "(removable|external|usb|mmc)" | head -1 | grep -o "Boot[0-9A-F]\{4\}")
       
       if [[ -n "${BOOT_ENTRY}" ]]; then
         BOOT_NUM=$(echo "${BOOT_ENTRY}" | sed 's/Boot//')
         if efibootmgr -n "${BOOT_NUM}" >/dev/null 2>&1; then
           echo "done (set ${BOOT_ENTRY} for next boot)"
+          echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
         else
-          echo "warning (failed to set boot order)"
+          echo "warning (failed to set boot order for ${BOOT_ENTRY})"
         fi
       else
-        echo "warning (could not identify boot entry for device)"
+        echo "warning (could not identify boot entry for device ${TARGET_DEVICE})"
+        echo "  Available boot entries:"
+        echo "${BOOT_ENTRIES}" | grep "Boot[0-9]" | head -5 | sed 's/^/    /'
       fi
     fi
   fi
