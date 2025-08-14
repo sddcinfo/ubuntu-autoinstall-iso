@@ -275,10 +275,18 @@ else
       
       # Set this as the next boot device
       if efibootmgr -n "${BOOT_NUM}" >/dev/null 2>&1; then
-        echo "done (set ${BOOT_ENTRY} for next boot)"
+        # Validate that the next boot is actually set correctly
+        sleep 1
+        NEXT_BOOT=$(efibootmgr | grep "BootNext" | grep -o "[0-9A-F]\{4\}")
         
-        # Optionally display the boot entry details
-        echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
+        if [[ "${NEXT_BOOT}" == "${BOOT_NUM}" ]]; then
+          echo "done (set ${BOOT_ENTRY} for next boot)"
+          echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
+          echo "  ✓ Verified: Next boot is set to ${BOOT_ENTRY}"
+        else
+          echo "warning (boot order set but verification failed)"
+          echo "  Expected: ${BOOT_NUM}, Got: ${NEXT_BOOT:-none}"
+        fi
       else
         echo "warning (failed to set boot order for ${BOOT_ENTRY})"
       fi
@@ -289,8 +297,18 @@ else
       if [[ -n "${BOOT_ENTRY}" ]]; then
         BOOT_NUM=$(echo "${BOOT_ENTRY}" | sed 's/Boot//')
         if efibootmgr -n "${BOOT_NUM}" >/dev/null 2>&1; then
-          echo "done (set ${BOOT_ENTRY} for next boot)"
-          echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
+          # Validate that the next boot is actually set correctly
+          sleep 1
+          NEXT_BOOT=$(efibootmgr | grep "BootNext" | grep -o "[0-9A-F]\{4\}")
+          
+          if [[ "${NEXT_BOOT}" == "${BOOT_NUM}" ]]; then
+            echo "done (set ${BOOT_ENTRY} for next boot)"
+            echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
+            echo "  ✓ Verified: Next boot is set to ${BOOT_ENTRY}"
+          else
+            echo "warning (boot order set but verification failed)"
+            echo "  Expected: ${BOOT_NUM}, Got: ${NEXT_BOOT:-none}"
+          fi
         else
           echo "warning (failed to set boot order for ${BOOT_ENTRY})"
         fi
