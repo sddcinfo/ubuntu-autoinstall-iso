@@ -244,8 +244,11 @@ else
   if [[ $? -ne 0 ]]; then
     echo "warning (efibootmgr failed)"
   else
+    echo "found $(echo "${BOOT_ENTRIES}" | wc -l) boot entries"
+    
     # Look for the device we just wrote to
     DEVICE_NAME=$(basename "${TARGET_DEVICE}")
+    echo "searching for device: ${DEVICE_NAME}"
     
     # Find boot entry that matches our device
     BOOT_ENTRY=""
@@ -271,6 +274,7 @@ else
     
     # If no existing boot entry found, create one for the newly written ISO
     if [[ -z "${BOOT_ENTRY}" ]]; then
+      echo "no existing boot entry found"
       echo -n "creating new boot entry for ${TARGET_DEVICE}... "
       
       # Create a new boot entry for the ISO we just wrote
@@ -280,9 +284,11 @@ else
         EFI_PARTITION="${TARGET_DEVICE}2"
       fi
       
+      echo "checking EFI partition: ${EFI_PARTITION}"
       if [[ -b "${EFI_PARTITION}" ]]; then
+        echo "EFI partition found, creating boot entry..."
         # Create boot entry pointing to the Ubuntu EFI bootloader
-        NEW_BOOT_OUTPUT=$(efibootmgr -c -d "${TARGET_DEVICE}" -p 2 -L "Ubuntu Live USB" -l "\\EFI\\BOOT\\BOOTX64.EFI" 2>/dev/null)
+        NEW_BOOT_OUTPUT=$(efibootmgr -c -d "${TARGET_DEVICE}" -p 2 -L "Ubuntu Live USB" -l "\\EFI\\BOOT\\BOOTX64.EFI" 2>&1)
         
         if [[ $? -eq 0 ]]; then
           # Extract the boot number from the output (e.g., "Boot0005* Ubuntu Live USB")
@@ -291,13 +297,19 @@ else
             echo "created ${BOOT_ENTRY}"
           else
             echo "created but could not extract boot number"
+            echo "efibootmgr output: ${NEW_BOOT_OUTPUT}"
           fi
         else
           echo "failed to create boot entry"
+          echo "error: ${NEW_BOOT_OUTPUT}"
         fi
       else
-        echo "failed (EFI partition not found)"
+        echo "failed (EFI partition ${EFI_PARTITION} not found)"
+        echo "available partitions:"
+        ls -la ${TARGET_DEVICE}* 2>/dev/null || echo "none found"
       fi
+    else
+      echo "found existing boot entry: ${BOOT_ENTRY}"
     fi
     
     if [[ -n "${BOOT_ENTRY}" ]]; then
