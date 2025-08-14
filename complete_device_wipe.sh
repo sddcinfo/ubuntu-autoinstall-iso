@@ -92,7 +92,7 @@ if [[ "$(id -u)" -ne 0 ]]; then
 fi
 
 echo "COMPLETE DEVICE WIPE SCRIPT"
-echo "WARNING: This will destroy ALL data on both devices:"
+echo "WARNING: This will destroy ALL data on the following devices:"
 echo "  - SD Card: ${SD_DEVICE}"
 echo "  - eMMC:    ${EMMC_DEVICE}"
 echo
@@ -102,9 +102,45 @@ echo "Current block devices:"
 lsblk
 echo
 
-# Wipe both devices
-wipe_device "${SD_DEVICE}" "SD CARD"
-wipe_device "${EMMC_DEVICE}" "eMMC"
+# Confirm which devices to wipe
+echo "Select devices to wipe:"
+echo "1) SD Card only (${SD_DEVICE})"
+echo "2) eMMC only (${EMMC_DEVICE})"
+echo "3) Both devices"
+echo "4) Cancel and exit"
+echo
+read -p "Enter your choice (1-4): " choice
+
+case $choice in
+  1)
+    echo "Wiping SD Card only..."
+    wipe_device "${SD_DEVICE}" "SD CARD"
+    ;;
+  2)
+    echo "Wiping eMMC only..."
+    wipe_device "${EMMC_DEVICE}" "eMMC"
+    ;;
+  3)
+    echo "Wiping both devices..."
+    echo
+    read -p "Are you ABSOLUTELY sure? This will destroy ALL data on BOTH devices! (yes/no): " confirm
+    if [[ "$confirm" == "yes" ]]; then
+      wipe_device "${SD_DEVICE}" "SD CARD"
+      wipe_device "${EMMC_DEVICE}" "eMMC"
+    else
+      echo "Operation cancelled."
+      exit 0
+    fi
+    ;;
+  4)
+    echo "Operation cancelled."
+    exit 0
+    ;;
+  *)
+    echo "Invalid choice. Operation cancelled."
+    exit 1
+    ;;
+esac
 
 # Final system cleanup
 echo "=== FINAL SYSTEM CLEANUP ==="
@@ -122,15 +158,27 @@ lsblk
 echo
 
 echo "==============================================="
-echo "COMPLETE WIPE SUCCESSFUL"
+echo "WIPE OPERATION SUCCESSFUL"
 echo "==============================================="
-echo "Both devices have been completely wiped:"
-echo "  ✓ SD Card (${SD_DEVICE}): CLEAN"
-echo "  ✓ eMMC (${EMMC_DEVICE}): CLEAN"
+case $choice in
+  1)
+    echo "SD Card (${SD_DEVICE}) has been completely wiped:"
+    echo "  ✓ SD Card: CLEAN"
+    ;;
+  2)
+    echo "eMMC (${EMMC_DEVICE}) has been completely wiped:"
+    echo "  ✓ eMMC: CLEAN"
+    ;;
+  3)
+    echo "Both devices have been completely wiped:"
+    echo "  ✓ SD Card (${SD_DEVICE}): CLEAN"
+    echo "  ✓ eMMC (${EMMC_DEVICE}): CLEAN"
+    ;;
+esac
 echo ""
 echo "All partition tables, boot sectors, and"
 echo "filesystem signatures have been destroyed."
 echo ""
-echo "You can now write a fresh ISO to eMMC without"
+echo "You can now write a fresh ISO without"
 echo "any interference from previous installations."
 echo "==============================================="
