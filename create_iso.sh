@@ -269,6 +269,37 @@ else
       fi
     fi
     
+    # If no existing boot entry found, create one for the newly written ISO
+    if [[ -z "${BOOT_ENTRY}" ]]; then
+      echo -n "creating new boot entry for ${TARGET_DEVICE}... "
+      
+      # Create a new boot entry for the ISO we just wrote
+      # Find the EFI partition (usually partition 2 on Ubuntu ISOs)
+      EFI_PARTITION="${TARGET_DEVICE}p2"
+      if [[ ! -b "${EFI_PARTITION}" ]]; then
+        EFI_PARTITION="${TARGET_DEVICE}2"
+      fi
+      
+      if [[ -b "${EFI_PARTITION}" ]]; then
+        # Create boot entry pointing to the Ubuntu EFI bootloader
+        NEW_BOOT_OUTPUT=$(efibootmgr -c -d "${TARGET_DEVICE}" -p 2 -L "Ubuntu Live USB" -l "\\EFI\\BOOT\\BOOTX64.EFI" 2>/dev/null)
+        
+        if [[ $? -eq 0 ]]; then
+          # Extract the boot number from the output (e.g., "Boot0005* Ubuntu Live USB")
+          BOOT_ENTRY=$(echo "${NEW_BOOT_OUTPUT}" | grep -o "Boot[0-9A-F]\{4\}")
+          if [[ -n "${BOOT_ENTRY}" ]]; then
+            echo "created ${BOOT_ENTRY}"
+          else
+            echo "created but could not extract boot number"
+          fi
+        else
+          echo "failed to create boot entry"
+        fi
+      else
+        echo "failed (EFI partition not found)"
+      fi
+    fi
+    
     if [[ -n "${BOOT_ENTRY}" ]]; then
       # Extract just the boot number (e.g., "0001" from "Boot0001")
       BOOT_NUM=$(echo "${BOOT_ENTRY}" | sed 's/Boot//')
