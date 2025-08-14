@@ -163,16 +163,16 @@ echo "==============================================="
 case $choice in
   1)
     echo "SD Card (${SD_DEVICE}) has been completely wiped:"
-    echo "  ✓ SD Card: CLEAN"
+    echo "  [OK] SD Card: CLEAN"
     ;;
   2)
     echo "eMMC (${EMMC_DEVICE}) has been completely wiped:"
-    echo "  ✓ eMMC: CLEAN"
+    echo "  [OK] eMMC: CLEAN"
     ;;
   3)
     echo "Both devices have been completely wiped:"
-    echo "  ✓ SD Card (${SD_DEVICE}): CLEAN"
-    echo "  ✓ eMMC (${EMMC_DEVICE}): CLEAN"
+    echo "  [OK] SD Card (${SD_DEVICE}): CLEAN"
+    echo "  [OK] eMMC (${EMMC_DEVICE}): CLEAN"
     ;;
 esac
 echo ""

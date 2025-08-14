@@ -29,11 +29,11 @@ fail_with_status() {
   echo "FAILED: $1"
   echo
   echo "Progress completed:"
-  [[ "$STEP_EXTRACT" == "true" ]] && echo "  ✓ ISO extraction" || echo "  ✗ ISO extraction"
-  [[ "$STEP_MODIFY" == "true" ]] && echo "  ✓ Configuration modification" || echo "  ✗ Configuration modification"
-  [[ "$STEP_BUILD" == "true" ]] && echo "  ✓ ISO rebuild" || echo "  ✗ ISO rebuild"
-  [[ "$STEP_VALIDATE" == "true" ]] && echo "  ✓ ISO validation" || echo "  ✗ ISO validation"
-  [[ "$STEP_WRITE" == "true" ]] && echo "  ✓ Device write" || echo "  ✗ Device write"
+  [[ "$STEP_EXTRACT" == "true" ]] && echo "  [OK] ISO extraction" || echo "  [FAIL] ISO extraction"
+  [[ "$STEP_MODIFY" == "true" ]] && echo "  [OK] Configuration modification" || echo "  [FAIL] Configuration modification"
+  [[ "$STEP_BUILD" == "true" ]] && echo "  [OK] ISO rebuild" || echo "  [FAIL] ISO rebuild"
+  [[ "$STEP_VALIDATE" == "true" ]] && echo "  [OK] ISO validation" || echo "  [FAIL] ISO validation"
+  [[ "$STEP_WRITE" == "true" ]] && echo "  [OK] Device write" || echo "  [FAIL] Device write"
   exit 1
 }
 
@@ -282,7 +282,7 @@ else
         if [[ "${NEXT_BOOT}" == "${BOOT_NUM}" ]]; then
           echo "done (set ${BOOT_ENTRY} for next boot)"
           echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
-          echo "  ✓ Verified: Next boot is set to ${BOOT_ENTRY}"
+          echo "  [OK] Verified: Next boot is set to ${BOOT_ENTRY}"
         else
           echo "warning (boot order set but verification failed)"
           echo "  Expected: ${BOOT_NUM}, Got: ${NEXT_BOOT:-none}"
@@ -304,7 +304,7 @@ else
           if [[ "${NEXT_BOOT}" == "${BOOT_NUM}" ]]; then
             echo "done (set ${BOOT_ENTRY} for next boot)"
             echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
-            echo "  ✓ Verified: Next boot is set to ${BOOT_ENTRY}"
+            echo "  [OK] Verified: Next boot is set to ${BOOT_ENTRY}"
           else
             echo "warning (boot order set but verification failed)"
             echo "  Expected: ${BOOT_NUM}, Got: ${NEXT_BOOT:-none}"
@@ -327,11 +327,11 @@ echo "==============================================="
 echo "SUCCESS: Custom Ubuntu ISO written to ${TARGET_DEVICE}"
 echo "==============================================="
 echo "All steps completed successfully:"
-echo "  ✓ ISO extraction"
-echo "  ✓ Configuration modification"  
-echo "  ✓ ISO rebuild"
-echo "  ✓ ISO validation"
-echo "  ✓ Device write"
+echo "  [OK] ISO extraction"
+echo "  [OK] Configuration modification"  
+echo "  [OK] ISO rebuild"
+echo "  [OK] ISO validation"
+echo "  [OK] Device write"
 echo
 echo "The device should now boot Ubuntu with autoinstall."
 echo "Custom ISO also saved as: ${CUSTOM_ISO}"
