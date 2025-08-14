@@ -4,12 +4,12 @@ A script that creates custom Ubuntu 24.04 autoinstall ISOs with embedded cloud-i
 
 ## Features
 
-- 🔄 **Automatic dependency installation** - Installs required packages automatically
-- 📥 **Automatic ISO download** - Downloads Ubuntu ISO from configurable mirror
-- ⚙️ **Custom autoinstall configuration** - Embeds your `user-data` for unattended installation
-- 🔧 **Device preparation** - Completely cleans target devices before writing
-- 💿 **Hybrid ISO creation** - Creates bootable ISOs with preserved boot signatures
-- 🖥️ **EFI boot management** - Automatically configures next boot to use the new installation media
+- **Automatic dependency installation** - Installs required packages automatically
+- **Automatic ISO download** - Downloads Ubuntu ISO from configurable mirror
+- **Custom autoinstall configuration** - Embeds your `user-data` for unattended installation
+- **Device preparation** - Completely cleans target devices before writing
+- **Hybrid ISO creation** - Creates bootable ISOs with preserved boot signatures
+- **EFI boot management** - Automatically configures next boot to use the new installation media
 
 ## How It Works
 
@@ -95,10 +95,10 @@ sudo ./create_iso.sh /dev/sdb
 ## Hardware Compatibility
 
 **Supported storage devices:**
-- ✅ **eMMC storage** (`/dev/mmcblk0`)
-- ✅ **NVMe SSDs** (`/dev/nvme0n1`) 
-- ✅ **SD cards** (`/dev/sda`)
-- ✅ **USB storage** (`/dev/sdb`, `/dev/sdc`, etc.)
+- **eMMC storage** (`/dev/mmcblk0`)
+- **NVMe SSDs** (`/dev/nvme0n1`) 
+- **SD cards** (`/dev/sda`)
+- **USB storage** (`/dev/sdb`, `/dev/sdc`, etc.)
 
 **System requirements:**
 - Ubuntu/Debian-based system (for package management)
