@@ -230,12 +230,12 @@ else
   # Force firmware to rescan for new boot devices
   echo -n "refreshing EFI boot entries... "
   partprobe "${TARGET_DEVICE}" >/dev/null 2>&1 || true
-  sleep 2
+  sleep 1
   
-  # Force udev to process the new partition table
-  udevadm settle >/dev/null 2>&1 || true
-  udevadm trigger --subsystem-match=block >/dev/null 2>&1 || true
-  udevadm settle >/dev/null 2>&1 || true
+  # Force udev to process the new partition table with timeout
+  timeout 10 udevadm settle >/dev/null 2>&1 || true
+  timeout 5 udevadm trigger --subsystem-match=block >/dev/null 2>&1 || true
+  timeout 10 udevadm settle >/dev/null 2>&1 || true
   sleep 1
   
   # Get current boot entries after refresh
