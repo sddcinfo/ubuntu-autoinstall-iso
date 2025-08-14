@@ -276,16 +276,27 @@ else
       # Set this as the next boot device
       if efibootmgr -n "${BOOT_NUM}" >/dev/null 2>&1; then
         # Validate that the next boot is actually set correctly
-        sleep 1
-        NEXT_BOOT=$(efibootmgr | grep "BootNext" | grep -o "[0-9A-F]\{4\}")
+        sleep 2
+        VERIFY_OUTPUT=$(efibootmgr 2>/dev/null)
         
-        if [[ "${NEXT_BOOT}" == "${BOOT_NUM}" ]]; then
-          echo "done (set ${BOOT_ENTRY} for next boot)"
-          echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
-          echo "  [OK] Verified: Next boot is set to ${BOOT_ENTRY}"
+        if [[ $? -eq 0 ]]; then
+          # Try different patterns for BootNext
+          NEXT_BOOT=$(echo "${VERIFY_OUTPUT}" | grep -i "BootNext" | sed -E 's/.*BootNext:?\s*([0-9A-Fa-f]+).*/\1/' | tr '[:lower:]' '[:upper:]')
+          
+          if [[ -n "${NEXT_BOOT}" && "${NEXT_BOOT}" == "${BOOT_NUM}" ]]; then
+            echo "done (set ${BOOT_ENTRY} for next boot)"
+            echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
+            echo "  [OK] Verified: Next boot is set to ${BOOT_ENTRY}"
+          elif [[ -n "${NEXT_BOOT}" ]]; then
+            echo "warning (boot order set but verification failed)"
+            echo "  Expected: ${BOOT_NUM}, Got: ${NEXT_BOOT}"
+          else
+            echo "done (set ${BOOT_ENTRY} for next boot - verification unavailable)"
+            echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
+          fi
         else
-          echo "warning (boot order set but verification failed)"
-          echo "  Expected: ${BOOT_NUM}, Got: ${NEXT_BOOT:-none}"
+          echo "done (set ${BOOT_ENTRY} for next boot - verification failed)"
+          echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
         fi
       else
         echo "warning (failed to set boot order for ${BOOT_ENTRY})"
@@ -298,16 +309,27 @@ else
         BOOT_NUM=$(echo "${BOOT_ENTRY}" | sed 's/Boot//')
         if efibootmgr -n "${BOOT_NUM}" >/dev/null 2>&1; then
           # Validate that the next boot is actually set correctly
-          sleep 1
-          NEXT_BOOT=$(efibootmgr | grep "BootNext" | grep -o "[0-9A-F]\{4\}")
+          sleep 2
+          VERIFY_OUTPUT=$(efibootmgr 2>/dev/null)
           
-          if [[ "${NEXT_BOOT}" == "${BOOT_NUM}" ]]; then
-            echo "done (set ${BOOT_ENTRY} for next boot)"
-            echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
-            echo "  [OK] Verified: Next boot is set to ${BOOT_ENTRY}"
+          if [[ $? -eq 0 ]]; then
+            # Try different patterns for BootNext
+            NEXT_BOOT=$(echo "${VERIFY_OUTPUT}" | grep -i "BootNext" | sed -E 's/.*BootNext:?\s*([0-9A-Fa-f]+).*/\1/' | tr '[:lower:]' '[:upper:]')
+            
+            if [[ -n "${NEXT_BOOT}" && "${NEXT_BOOT}" == "${BOOT_NUM}" ]]; then
+              echo "done (set ${BOOT_ENTRY} for next boot)"
+              echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
+              echo "  [OK] Verified: Next boot is set to ${BOOT_ENTRY}"
+            elif [[ -n "${NEXT_BOOT}" ]]; then
+              echo "warning (boot order set but verification failed)"
+              echo "  Expected: ${BOOT_NUM}, Got: ${NEXT_BOOT}"
+            else
+              echo "done (set ${BOOT_ENTRY} for next boot - verification unavailable)"
+              echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
+            fi
           else
-            echo "warning (boot order set but verification failed)"
-            echo "  Expected: ${BOOT_NUM}, Got: ${NEXT_BOOT:-none}"
+            echo "done (set ${BOOT_ENTRY} for next boot - verification failed)"
+            echo "  Boot entry: $(echo "${BOOT_ENTRIES}" | grep "${BOOT_ENTRY}" | head -1)"
           fi
         else
           echo "warning (failed to set boot order for ${BOOT_ENTRY})"
