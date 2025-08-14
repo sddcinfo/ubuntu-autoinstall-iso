@@ -1,40 +1,42 @@
 #cloud-config
-# Ubuntu Autoinstall Configuration
+# This file contains the user configuration for the Ubuntu Autoinstall process.
 # Default password is 'password' - CHANGE THIS for production use!
 
 autoinstall:
   version: 1
+  # Set the locale and keyboard layout for the system.
   locale: en_US.UTF-8
   keyboard:
     layout: us
     variant: ""
   
-  # User account configuration
+  # Define the initial user account with a hashed password and passwordless sudo.
   identity:
-    hostname: ubuntu-server
-    realname: "Administrator" 
-    username: admin
-    password: "$6$rounds=4096$saltsalt$3xvH1iSLskeSMc.1sX7w8.q8qWd7sNOZp9cdvl1DWBfq4LE2/.6MmP4wKu4X3P3WvZd1C.5M7CZNxjOxJzE2T1"  # password: password
+    hostname: mgmt
+    realname: "sysadmin"
+    username: sysadmin
+    password: "$6$AjdqvosfHC0tc1ye$qJtinQz4bdca6m5wx8JI4rSXhBeIACqiNUt3M7Z4BKYuG/k.nWz7nD0JbWM4xcbvOuloaIyNwOccEoSiOoc6i0"  # password: password
+  user-data:
+    users:
+      - name: sysadmin
+        sudo: ALL=(ALL) NOPASSWD:ALL
   
+  # Configure SSH, install the server, and add an authorized key for passwordless access.
   ssh:
     install-server: true
 
-  # Automatic LVM storage layout
   storage:
     layout:
       name: lvm
       match:
         path: /dev/nvme0n1
 
+  # Package management
   packages:
     - openssh-server
-    - curl
     - git
+    - curl
+    - net-tools
+    - vim
 
   shutdown: reboot
-
-# Cloud-init user configuration
-user-data:
-  users:
-    - name: admin
-      sudo: ALL=(ALL) NOPASSWD:ALL
