@@ -1,0 +1,41 @@
+#cloud-config
+# This file contains the user configuration for the Ubuntu Autoinstall process.
+
+autoinstall:
+  version: 1
+  # Set the locale and keyboard layout for the system.
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+    variant: ""
+  
+  # Define the initial user account with a hashed password and passwordless sudo.
+  identity:
+    hostname: mgmt
+    realname: "sysadmin"
+    username: sysadmin
+    password: "$6$AjdqvosfHC0tc1ye$qJtinQz4bdca6m5wx8JI4rSXhBeIACqiNUt3M7Z4BKYuG/k.nWz7nD0JbWM4xcbvOuloaIyNwOccEoSiOoc6i0"
+  user-data:
+    users:
+      - name: sysadmin
+        sudo: ALL=(ALL) NOPASSWD:ALL
+  
+  # Configure SSH, install the server, and add an authorized key for passwordless access.
+  ssh:
+    install-server: true
+
+  storage:
+    layout:
+      name: lvm
+      match:
+        path: /dev/nvme0n1
+
+  # Package management
+  packages:
+    - openssh-server
+    - git
+    - curl
+    - net-tools
+    - vim
+
+  shutdown: reboot
