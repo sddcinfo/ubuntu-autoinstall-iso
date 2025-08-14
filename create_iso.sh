@@ -305,7 +305,7 @@ else
       BOOT_NUM=$(echo "${BOOT_ENTRY}" | sed 's/Boot//')
       
       # Set this as the next boot device
-      if efibootmgr -n "${BOOT_NUM}" >/dev/null 2>&1; then
+      if efibootmgr --bootnext "${BOOT_NUM}" >/dev/null 2>&1; then
         # Validate that the next boot is actually set correctly - try multiple times
         VALIDATION_SUCCESS=false
         for attempt in 1 2 3; do
@@ -365,7 +365,7 @@ else
       
       if [[ -n "${BOOT_ENTRY}" ]]; then
         BOOT_NUM=$(echo "${BOOT_ENTRY}" | sed 's/Boot//')
-        if efibootmgr -n "${BOOT_NUM}" >/dev/null 2>&1; then
+        if efibootmgr --bootnext "${BOOT_NUM}" >/dev/null 2>&1; then
           # Validate that the next boot is actually set correctly - try multiple times
           VALIDATION_SUCCESS=false
           for attempt in 1 2 3; do
